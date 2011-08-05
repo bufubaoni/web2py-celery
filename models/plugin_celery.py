@@ -96,11 +96,12 @@ def _():
         Field('expires','datetime'),
         Field('result','text'),
         Field('traceback','text'),
-        Field('running_time','double'), # in seconds
+        Field('runtime','double'), # in seconds
         Field('retries','integer',default=0),
-        Field('worker',workerstate),
+        Field('worker','string'),
         Field('hidden','boolean',default=False,
               writable=False,readable=False))
 
     return Storage(locals())
 plugin_celery = _()
+plugin_celery_db = plugin_celery.db

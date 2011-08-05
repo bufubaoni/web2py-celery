@@ -1,0 +1,44 @@
+{{extend 'layout.html'}}
+<table>
+  <tr>
+    <th>Id</th>
+    <th>Status</th>
+    <th>Timestamp</th>
+    <th>Task_id</th>
+    <th>Result</th>
+    <th>Traceback</th>
+    <th>Actions</th>
+  </tr>
+  {{for task in tasks:}}
+  <tr>
+    <td>
+      {{=task.id}}
+    </td>
+    <td style="color: {{=plugin_celery.TASK_STATE_COLORS.get(task.state,'black')}}">
+      {{=task.state}}
+    </td>
+    <td>
+      {{=task.tstamp}}
+    </td>
+    <td>
+      {{=A(task.task_id,_href=URL('view_taskstate',args=task.task_id))}}
+    </td>
+    <td>
+      {{=task.result and 'DATA' or ''}}
+    </td>
+    <td>
+      {{=task.traceback and 'DATA' or ''}}
+    </td>
+    <td>
+      {{b=plugin_celery.button}}
+      {{=b('revoke',URL('revoke_task',args=task.task_id))}}
+      {{=b('terminate',URL('terminate_task',args=task.task_id))}}
+      {{=b('kill',URL('kill_task',args=task.task_id))}}
+      {{=b('delete',URL('delete_task',args=task.task_id),hide=True)}}
+    </td>
+  </tr>
+  {{pass}}
+</table>
+
+{{if page>0:}}{{=A('previous',_href=URL(vars=dict(page=page-1)))}}{{pass}}
+{{if len(tasks)==100:}}{{=A('next',_href=URL(vars=dict(page=page+1)))}}{{pass}}

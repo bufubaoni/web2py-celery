@@ -4,8 +4,10 @@ from plugin_celery import actions
 
 response.menu += [
     (T('Celery Console'),False,None,
-     [(T('Task Monitor'),False,URL('task_monitor')),
-      (T('Periodic Task Monitor'),False,URL('periodic_task_monitor')),
+     [(T('Task Monitor (Meta)'),False,URL('task_monitor')),
+      (T('Periodic Task Monitor (Meta)'),False,URL('periodic_task_monitor')),
+      (T('Task Monitor (Camera)'),False,URL('taskstate_monitor')),
+      (T('Periodic Task Monitor (Camera)'),False,URL('taskstate_monitor')),
       (T('Workers Monitor'),False,URL('workers_monitor'))])]
 
 pc = plugin_celery
@@ -58,11 +60,25 @@ def task_monitor():
         limitby=(100*page, 100*(page+1)))    
     return dict(tasks=tasks,page=page)
 
+def view_taskstate():
+    task_id = request.args(0)
+    return dict(task=pc.taskstate(task_id=task_id))
+
+def taskstate_monitor():
+    page = int(request.vars.page or 0)
+    tasks = db(pc.taskstate).select(
+        orderby=~pc.taskstate.tstamp,
+        limitby=(100*page, 100*(page+1)))
+    return dict(tasks=tasks,page=page)
+
 def periodic_task_monitor():
     pass
 
 def workers_monitor():
-    return dict(workers=actions.list_workers())
+    #return dict(workers=actions.list_workers())
+    workers = db(pc.workerstate).select(
+        orderby=~pc.workerstate.last_heartbeat)
+    return dict(workers=workers)
 
 def inspect_worker():
     return dict(info=actions.inspect_workers([request.args(0)]))
