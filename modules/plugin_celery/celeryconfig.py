@@ -1,9 +1,12 @@
+import os
 # List of modules to import when celery starts.
 CELERY_IMPORTS = []
 
 ## Result store settings.
+## This is important, allows web2py to access the celery db directly
 CELERY_RESULT_BACKEND = "database"
-CELERY_RESULT_DBURI = "sqlite:///mydatabase.db"
+## This allows web2py to find the celery db
+CELERY_RESULT_DBURI = "sqlite:///%s/mydatabase.db" % os.path.dirname(__file__)
 
 ## Broker settings.
 BROKER_HOST = "localhost"

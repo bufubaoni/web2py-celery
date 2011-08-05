@@ -1,6 +1,7 @@
 from gluon.serializers import json
 from plugin_celery import actions
 
+
 response.menu += [
     (T('Celery Console'),False,None,
      [(T('Task Monitor'),False,URL('task_monitor')),
@@ -9,6 +10,9 @@ response.menu += [
 
 pc = plugin_celery
 db = plugin_celery.db
+
+def index():
+    return locals()
 
 def submit_task():
     name = request.args(0)
@@ -43,6 +47,10 @@ def kill_task():
     task_id = request.args(0)
     return str(actions.kill_task(task_id))
 
+def view_task():
+    task_id = request.args(0)
+    return dict(task=actions.task_status(task_id))
+
 def button(name,link,hide=False):
     hide = hide and "jQuery(this).closest('tr').remove();" or ''
     return CAT('[',A(name,_href='#',_onclick="ajax('%s',[],'');%sreturn false;" % (link,hide)),']')
@@ -56,7 +64,7 @@ def task_monitor():
         button('terminate',URL('terminate_task',args=task_id)),
         button('kill',URL('kill_task',args=task_id)),
         button('delete',URL('delete_task',args=task_id),hide=True),
-        A(task_id,_href='task_view',args=task_id))
+        A(task_id,_href=URL('view_task',args=task_id)))
     tasks = db(pc.taskmeta).select(
         orderby=~pc.taskmeta.date_done,
         limitby=(100*page, 100*(page+1)))    

@@ -1,3 +1,5 @@
+import sys, os
+sys.path.append(os.path.dirname(__file__))
 from celery.app import default_app
 from celery.utils import get_full_cls_name
 from celery.registry import tasks
