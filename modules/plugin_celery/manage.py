@@ -7,6 +7,10 @@ sys.path.append(os.getcwd())
 from celery.bin import camqadm, celeryev, celerybeat, celeryd, celeryd_detach
 from celery.bin.celeryctl import celeryctl, Command as _Command
 from celery.app import default_app
+print """
+Warning... this file is here for compatibility with django-celery but it is
+not necessay: manage.py [whatever...] is the same as just [whatever...].
+"""
 try:
     from celerymonitor.bin.celerymond import MonitorCommand
     monitor = MonitorCommand(app=default_app)
@@ -40,7 +44,7 @@ OPTIONS = {
     'celeryctl':(
         "celery control utility",
         [],
-        lambda args,options: util.execute_from_commandline(sys.argv[1:])),
+        lambda args,options: util.execute_from_commandline(sys.argv[3:])),
     'celeryd':(
         'Runs a Celery worker node.',
         worker.get_options(),

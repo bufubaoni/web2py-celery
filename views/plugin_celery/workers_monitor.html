@@ -1,0 +1,14 @@
+{{extend 'layout.html'}}
+
+<table>
+  {{for w in workers:}}
+  <tr>
+    <td>
+      {{=A(w,_href=URL('inspect_worker',args=w))}}
+    </td>
+    <td>
+      [<a href="#" onclick="ajax('shutdown_worker/{{=w}}',[],'');jQuery(this).closest('tr').remove();return False">shutdown</a>]
+    </td>
+  </tr>
+  {{pass}}
+</table>

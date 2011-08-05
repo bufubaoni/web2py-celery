@@ -21,8 +21,9 @@ def _():
     NODE_STATE_COLORS = {"ONLINE": "green",
                          "OFFLINE": "gray"}
 
-    WORKER_UPDATE_FREQ = 60  # limit worker timestamp write freq.                   
-    Task = db.define_table(
+    WORKER_UPDATE_FREQ = 60  # limit worker timestamp write freq.
+
+    taskmeta = db.define_table(
         'celery_taskmeta',
         Field('task_id',length=255,unique=True),
         Field('status',length=50,default=states.PENDING,
@@ -30,30 +31,30 @@ def _():
         Field('result','boolean',default=''),
         Field('date_done','datetime',default=request.now),
         Field('traceback','text',default=None))
-    TaskSet = db.define_table(
+    tasksetmeta = db.define_table(
         'celery_tasksetmeta',
         Field('taskset_id',length=255,unique=True),
         Field('result','boolean',default=''),
         Field('date_done','datetime',default=request.now))
-    IntervalSchedule = db.define_table(
+    intervalschedule = db.define_table(
         'celery_intervalschedule',
         Field('every','integer',notnull=True),
         Field('period',length=24,
               requires=IS_IN_SET(PERIOD_CHOICES)))
-    Crontab = db.define_table(
+    crontab = db.define_table(
         'celery_crontabschedule',
         Field('minute',length=64,default='*'),
         Field('hour',length=64,default='*'),
         Field('day_of_week',length=64,default='*'))
-    PeriodicTasks = db.define_table(
+    periodictasks = db.define_table(
         'celery_periodictasks',
         Field('last_update','datetime',notnull=True))
-    PeriodicTask = db.define_table(
+    periodictask = db.define_table(
         'celery_periodictask',
         Field('name',length=200,unique=True),
         Field('task',length=200,unique=True),
-        Field('interval',IntervalSchedule),
-        Field('crontab',Crontab),
+        Field('interval',intervalschedule),
+        Field('crontab',crontab),
         Field('args','text',default='[]'),
         Field('kwargs','text',default='{}'),
         Field('queue',length=200),
@@ -65,11 +66,11 @@ def _():
         Field('total_runs_count','integer',default=0),
         Field('date_changed','datetime',
               default=request.now,update=request.now))
-    WorkerState = db.define_table(
+    workerstate = db.define_table(
         'celery_workerstate',
         Field('hostname',length=255,unique=True),
         Field('last_heartbeat','datetime')) # requires an index!
-    TaskState = db.define_table(
+    taskstate = db.define_table(
         'celery_taskstate',
         Field('state',length=64,
               requires=IS_IN_SET(TASK_STATE_CHOICES)), # requires index
@@ -84,9 +85,8 @@ def _():
         Field('traceback','text'),
         Field('running_time','double'), # in seconds
         Field('retries','integer',default=0),
-        Field('worker',WorkerState),
+        Field('worker',workerstate),
         Field('hidden','boolean',default=False,
               writable=False,readable=False))
     return Storage(locals())
 plugin_celery = _()
-plugin_celery_db = plugin_celery.db

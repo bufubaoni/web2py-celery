@@ -3,6 +3,7 @@ from celery.utils import get_full_cls_name
 from celery.registry import tasks
 from celery.execute import send_task
 from celery.result import AsyncResult
+from celery.task import control
 
 def submit_task(name,*args,**kwargs):
     """ submits a new task by name """
@@ -26,6 +27,40 @@ def task_status(task_id):
                               "traceback": traceback})
     return {"task": response_data}
 
+def revoke_task(task_id,terminate=False,signal=None):
+    connection = default_app.broker_connection()
+    return control.revoke(task_id, connection=connection,
+                  terminate=terminate, signal=signal)
+
+def terminate_task(task_id):
+    return control.revoke_task(task_id,terminate=True)
+
+def kill_task(task_id):
+    return control.revoke_task(task_id,terminate=True,signal='KILL')
+
+def list_workers(timeout=0.5):
+    return [item.keys()[0] for item in control.ping(timeout=timeout)]
+
+def inspect_workers(workers):
+    i = control.inspect(workers)
+    return {
+        'registered_tasks':i.registered_tasks(),
+        'active':i.active(),
+        'scheduled':i.scheduled(),
+        'reserved':i.reserved()}
+
+def shutdown_workers(workers):
+    return control.broadcast('shutdown', destination=workers)
+
+def set_time_limit(task_name, soft=60, hard=120, reply=True):
+    return control.time_limit(task_name,soft,hard,reply)
+
+def set_rate_limit(task_name,rate_limit,workers=None):
+    return control.broadcast("rate_limit", 
+                             {"task_name": "myapp.mytask",
+                              "rate_limit": "200/m"}, reply=True,
+                             destination=workers)
+
 def main_test():
     import sys
     import time
@@ -41,7 +76,7 @@ usage:
         (for demo <name> is 'tasks.TaskOne' or 'tasks.TaskTwo')
         """ % dict(name=sys.argv[0])
     elif sys.argv[1]=='submit_task':
-        task = submit_task('tasks.TaskOne')
+        task = submit_task(sys.argv[2])
         print task['task_id']
     elif sys.argv[1]=='task_status' and len(sys.argv)>2:
         status = task_status(sys.argv[2])

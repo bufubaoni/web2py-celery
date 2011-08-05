@@ -1,7 +1,6 @@
 from datetime import timedelta
 from celery.task import Task, PeriodicTask
 import time
-# from app.models import mytable ???
 
 class TaskOne(Task):
     def run(self, **kwargs):

@@ -1,0 +1,6 @@
+{{extend 'layout.html'}}
+
+{{=SQLTABLE(tasks,headers="fieldname:capitalize")}}
+
+{{if page>0:}}{{=A('previous',_href=URL(vars=dict(page=page-1)))}}{{pass}}
+{{if len(tasks)==100:}}{{=A('next',_href=URL(vars=dict(page=page+1)))}}{{pass}}
