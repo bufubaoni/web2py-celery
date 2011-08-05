@@ -35,10 +35,10 @@ def revoke_task(task_id,terminate=False,signal=None):
                   terminate=terminate, signal=signal)
 
 def terminate_task(task_id):
-    return control.revoke_task(task_id,terminate=True)
+    return revoke_task(task_id,terminate=True)
 
 def kill_task(task_id):
-    return control.revoke_task(task_id,terminate=True,signal='KILL')
+    return revoke_task(task_id,terminate=True,signal='KILL')
 
 def list_workers(timeout=0.5):
     return [item.keys()[0] for item in control.ping(timeout=timeout)]

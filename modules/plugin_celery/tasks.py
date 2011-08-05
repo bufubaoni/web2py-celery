@@ -4,8 +4,14 @@ import time
 
 class TaskOne(Task):
     def run(self, **kwargs):
-        time.sleep(5)
+        time.sleep(kwargs.get('seconds',5))
         print 'TaskOne'
+        return True
+
+class TaskError(Task):
+    def run(self, **kwargs):
+        print 'TaskError'
+        1/0
         return True
 
 class TaskTwo(PeriodicTask):

@@ -1,5 +1,11 @@
 def _():
 
+    def button(name,link,hide=False):
+        hide = hide and "jQuery(this).closest('tr').remove();" or ''
+        return CAT('[',A(name,_href='#',
+                         _onclick="ajax('%s',[],'');%sreturn false;"\
+                             % (link,hide)),']')
+
     from gluon.storage import Storage
     from celery import states
     db = DAL('sqlite://../modules/plugin_celery/mydatabase.db',
@@ -28,13 +34,13 @@ def _():
         Field('task_id',length=255,unique=True),
         Field('status',length=50,default=states.PENDING,
               requires=IS_IN_SET(TASK_STATE_CHOICES)),
-        Field('result','boolean',default=''),
+        Field('result','text',default=''),
         Field('date_done','datetime',default=request.now),
         Field('traceback','text',default=None))
     tasksetmeta = db.define_table(
         'celery_tasksetmeta',
         Field('taskset_id',length=255,unique=True),
-        Field('result','boolean',default=''),
+        Field('result','text',default=''),
         Field('date_done','datetime',default=request.now))
     intervalschedule = db.define_table(
         'celery_intervalschedule',
