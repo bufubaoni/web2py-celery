@@ -6,7 +6,7 @@ CELERY_IMPORTS = []
 ## This is important, allows web2py to access the celery db directly
 CELERY_RESULT_BACKEND = "database"
 ## This allows web2py to find the celery db
-CELERY_RESULT_DBURI = "sqlite:///%s/mydatabase.db" % os.path.dirname(__file__)
+CELERY_RESULT_DBURI = "sqlite:///%s/../../databases/plugin_celery.db" % os.path.dirname(__file__)
 
 ## Broker settings.
 BROKER_HOST = "localhost"

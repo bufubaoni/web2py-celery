@@ -16,9 +16,9 @@ def index():
 
 def submit_task():
     name = request.args(0)
-    args = request.vars
+    vars = request.vars
     response.headers['Content-Type'] = "application/json"
-    return json(actions.submit_task(name,**args))
+    return json(actions.submit_task(name,**vars))
 
 def registered_tasks():
     response.headers['Content-Type'] = "application/json"

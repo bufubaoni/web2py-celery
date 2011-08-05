@@ -2,24 +2,32 @@ from datetime import timedelta
 from celery.task import Task, PeriodicTask
 import time
 
-class TaskOne(Task):
+class DemoTaskFast(Task):
     def run(self, **kwargs):
-        time.sleep(kwargs.get('seconds',5))
-        print 'TaskOne'
+        t = 1
+        print 'DemoTaskFast sleeping %i seconds' % t
+        time.sleep(t)
         return True
 
-class TaskError(Task):
+class DemoTaskSlow(Task):
     def run(self, **kwargs):
-        print 'TaskError'
+        t = 30
+        print 'DemoTaskSlow sleeping %i seconds' % t
+        time.sleep(t)
+        return True
+
+class DemoTaskError(Task):
+    def run(self, **kwargs):
+        print 'DemoTaskError'
         1/0
         return True
 
-class TaskTwo(PeriodicTask):
+class DemoTaskPeriodic(PeriodicTask):
     """
     A periodic task that concatenates fields to form a person's full name.
     """
     run_every = timedelta(seconds=60)
 
     def run(self, **kwargs):
-        print 'TaskTwo'
+        print 'DemoTaskPeriodic'
         return True

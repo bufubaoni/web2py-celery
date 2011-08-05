@@ -1,0 +1,16 @@
+http://mathematism.com/2010/02/16/message-queues-django-and-celery-quick-start/
+
+easy_install simplejson
+easy_install anyjson
+easy_install celery
+easy_install sqlalchemy # for celery to store data
+sudo port install rabbitmq-server
+
+sudo rabbitmq-server -detached 
+python2.7 manage.py celeryd --loglevel=DEBUG -E
+python2.7 manage.py celerybeat --loglevel=DEBUG
+python2.7 manage.py celeryev
+
+
+database.py tells celery to store tasks in web2py db (incomplete)
+views.py exposes APIs. Almost done!

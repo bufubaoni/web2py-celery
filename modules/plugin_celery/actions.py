@@ -75,7 +75,7 @@ usage:
         %(name)s registered_tasks
         %(name)s submit_task <name>
         %(name)s task_status <id>
-        (for demo <name> is 'tasks.TaskOne' or 'tasks.TaskTwo')
+        (for demo <name> is 'tasks.DemoTaskFast' or 'tasks.DemoTaskSlow')
         """ % dict(name=sys.argv[0])
     elif sys.argv[1]=='submit_task':
         task = submit_task(sys.argv[2])
@@ -87,7 +87,7 @@ usage:
         print registered_tasks() 
     elif sys.argv[1] == 'demo':
         print registered_tasks()
-        task = submit_task('tasks.TaskOne')        
+        task = submit_task('tasks.DemoTaskFast')        
         from time import sleep
         while True:
             status = task_status(task['task_id'])    

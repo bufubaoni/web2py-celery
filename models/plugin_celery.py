@@ -8,8 +8,8 @@ def _():
 
     from gluon.storage import Storage
     from celery import states
-    db = DAL('sqlite://../modules/plugin_celery/mydatabase.db',
-             migrate_enabled=False)
+
+    db = DAL('sqlite://plugin_celery.db')
     
     HEARTBEAT_EXPIRE = 150      # 2 minutes, 30 seconds
     TASK_STATE_CHOICES = zip(states.ALL_STATES, states.ALL_STATES)
@@ -37,24 +37,29 @@ def _():
         Field('result','text',default=''),
         Field('date_done','datetime',default=request.now),
         Field('traceback','text',default=None))
+
     tasksetmeta = db.define_table(
         'celery_tasksetmeta',
         Field('taskset_id',length=255,unique=True),
         Field('result','text',default=''),
         Field('date_done','datetime',default=request.now))
+
     intervalschedule = db.define_table(
         'celery_intervalschedule',
         Field('every','integer',notnull=True),
         Field('period',length=24,
               requires=IS_IN_SET(PERIOD_CHOICES)))
+
     crontab = db.define_table(
         'celery_crontabschedule',
         Field('minute',length=64,default='*'),
         Field('hour',length=64,default='*'),
         Field('day_of_week',length=64,default='*'))
+
     periodictasks = db.define_table(
         'celery_periodictasks',
         Field('last_update','datetime',notnull=True))
+
     periodictask = db.define_table(
         'celery_periodictask',
         Field('name',length=200,unique=True),
@@ -72,10 +77,12 @@ def _():
         Field('total_runs_count','integer',default=0),
         Field('date_changed','datetime',
               default=request.now,update=request.now))
+
     workerstate = db.define_table(
         'celery_workerstate',
         Field('hostname',length=255,unique=True),
         Field('last_heartbeat','datetime')) # requires an index!
+
     taskstate = db.define_table(
         'celery_taskstate',
         Field('state',length=64,
@@ -94,5 +101,6 @@ def _():
         Field('worker',workerstate),
         Field('hidden','boolean',default=False,
               writable=False,readable=False))
+
     return Storage(locals())
 plugin_celery = _()
