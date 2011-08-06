@@ -48,24 +48,30 @@ def _():
         'celery_intervalschedule',
         Field('every','integer',notnull=True),
         Field('period',length=24,
-              requires=IS_IN_SET(PERIOD_CHOICES)))
+              requires=IS_IN_SET(PERIOD_CHOICES)),
+        format='every %(every)s %(period)s')        
 
     crontab = db.define_table(
         'celery_crontabschedule',
         Field('minute',length=64,default='*'),
         Field('hour',length=64,default='*'),
-        Field('day_of_week',length=64,default='*'))
+        Field('day_of_week',length=64,default='*'),
+        format='%(minute)s %(hour)s %(day_of_week)s')        
 
-    periodictasks = db.define_table(
+    periodictasks = db.define_table(  ### this table muct contain a single record
         'celery_periodictasks',
         Field('last_update','datetime',notnull=True))
 
     periodictask = db.define_table(
         'celery_periodictask',
         Field('name',length=200,unique=True),
-        Field('task',length=200,unique=True),
-        Field('interval',intervalschedule),
-        Field('crontab',crontab),
+        Field('task',length=200),
+        Field('interval',intervalschedule,
+              requires=IS_NULL_OR(IS_IN_DB(db,intervalschedule.id,
+                                           intervalschedule._format))),
+        Field('crontab',crontab,
+              requires=IS_NULL_OR(IS_IN_DB(db,crontab.id,
+                                           crontab._format))),
         Field('args','text',default='[]'),
         Field('kwargs','text',default='{}'),
         Field('queue',length=200),
@@ -74,7 +80,7 @@ def _():
         Field('expires','datetime',default=None),
         Field('enabled','boolean',default=True),
         Field('last_run_at','datetime',writable=False,default=None),
-        Field('total_runs_count','integer',default=0),
+        Field('total_run_count','integer',default=0),
         Field('date_changed','datetime',
               default=request.now,update=request.now))
 

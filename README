@@ -8,8 +8,9 @@ sudo port install rabbitmq-server
 
 sudo rabbitmq-server -detached 
 python2.7 manage.py celeryd --loglevel=DEBUG -E
-python2.7 manage.py celerybeat --loglevel=DEBUG
-python2.7 manage.py celeryev -c polaroid.Web2pyCamera --frequency=2.0
+python2.7 manage.py celerybeat -S scheduler.Web2pyScheduler --loglevel=DEBUG
+python2.7 manage.py celeryev -c camera.Web2pyCamera --frequency=2.0
+python2.7 manage.py celeryev
 
 database.py tells celery to store tasks in web2py db (incomplete)
 views.py exposes APIs. Almost done!

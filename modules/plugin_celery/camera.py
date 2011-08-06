@@ -3,7 +3,7 @@ from celery.utils.timeutils import maybe_iso8601
 from celery.events.snapshot import Polaroid
 from celeryconfig import CELERY_RESULT_DBURI
 import sys, os
-sys.path.append('/Users/mdipierro/web2py')
+sys.path.append(os.environ['WEB2PY_PATH'])
 
 from gluon import DAL
 folder, uri = os.path.split(CELERY_RESULT_DBURI.split(':///')[1])

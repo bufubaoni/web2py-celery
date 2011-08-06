@@ -24,7 +24,7 @@ class DemoTaskError(Task):
 
 class DemoTaskPeriodic(PeriodicTask):
     """
-    A periodic task that concatenates fields to form a person's full name.
+    A Periodic Task
     """
     run_every = timedelta(seconds=60)
 

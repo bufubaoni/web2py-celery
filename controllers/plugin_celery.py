@@ -4,17 +4,16 @@ from plugin_celery import actions
 
 response.menu += [
     (T('Celery Console'),False,None,
-     [(T('Task Monitor (Meta)'),False,URL('task_monitor')),
-      (T('Periodic Task Monitor (Meta)'),False,URL('periodic_task_monitor')),
+     [(T('Task Monitor (Meta)'),False,URL('taskmeta_monitor')),
       (T('Task Monitor (Camera)'),False,URL('taskstate_monitor')),
-      (T('Periodic Task Monitor (Camera)'),False,URL('taskstate_monitor')),
+      (T('Task Schduler'),False,URL('periodictask_monitor')),
       (T('Workers Monitor'),False,URL('workers_monitor'))])]
 
 pc = plugin_celery
 db = plugin_celery.db
 
 def index():
-    return locals()
+    redirect(URL('taskstate_monitor'))
 
 def submit_task():
     name = request.args(0)
@@ -53,7 +52,7 @@ def view_task():
     task_id = request.args(0)
     return dict(task=actions.task_status(task_id))
 
-def task_monitor():
+def taskmeta_monitor():
     page = int(request.vars.page or 0)
     tasks = db(pc.taskmeta).select(
         orderby=~pc.taskmeta.date_done,
@@ -71,9 +70,6 @@ def taskstate_monitor():
         limitby=(100*page, 100*(page+1)))
     return dict(tasks=tasks,page=page)
 
-def periodic_task_monitor():
-    pass
-
 def workers_monitor():
     #return dict(workers=actions.list_workers())
     workers = db(pc.workerstate).select(
@@ -85,3 +81,54 @@ def inspect_worker():
 
 def shutdown_worker():
     return str(actions.shutdown_workers([request.args(0)]))
+
+def edit_periodictask():
+    id = request.args(0)
+    form=SQLFORM(pc.periodictask,id)
+    if form.accepts(request,session):
+        session.flash = 'task updated'
+        redirect('periodictask_monitor')
+    return dict(form=form)
+
+def periodictask_monitor():
+    page = int(request.vars.page or 0)
+    pc.periodictask.id.represent=lambda id: \
+        SPAN(id,' [',
+             A('edit',_href=URL('edit_periodictask',args=id)),'][',
+             A('on',callback=URL('enable_callback',args=(id,'True'))),'][',
+             A('off',callback=URL('enable_callback',args=(id,'Off'))),'][',
+             A('delete',callback=URL('delete_periodictask',args=id)),']')
+    tasks = db(pc.periodictask).select(limitby=(100*page, 100*(page+1)))
+    link = A('new task',_href=URL('edit_periodictask'))
+    return dict(tasks=tasks,page=page,link=link)    
+
+def enable_callback():
+    id = request.args(0)
+    enabled = request.args(1)=='True'
+    db(pc.periodictask.id==id).update(enabled=enabled)
+    return request.args(1)
+
+def delete_periodictask():
+    id = request.args(0)
+    db(pc.periodictask.id==id).delete()
+    return 'true'
+
+def last_update():
+    row = db(pc.periodictasks).select().first()
+    return row and row.last_update.isoformat() or 'unkown'
+
+def manage_intervals():
+    table = pc.intervalschedule
+    table.id.represent=lambda id: SPAN(id,' [',A('edit',_href=URL(args=id)),']')
+    form = SQLFORM(table,request.args(0))
+    if form.accepts(request,session): response.flash='saved'
+    rows = SQLTABLE(db(table).select(),headers='fieldname:capitalize')
+    return locals()
+
+def manage_crontab():
+    table = pc.crontab
+    table.id.represent=lambda id: SPAN(id,' [',A('edit',_href=URL(args=id)),']')
+    form = SQLFORM(table,request.args(0))
+    if form.accepts(request,session): response.flash='saved'
+    rows = SQLTABLE(db(table).select(),headers='fieldname:capitalize')
+    return locals()
