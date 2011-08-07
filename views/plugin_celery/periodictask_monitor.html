@@ -1,9 +1,11 @@
 {{extend 'layout.html'}}
 
+<h2>Periodic Task Monitor</h2>
+
 {{=A('intervals',_href=URL('manage_intervals'))}}
 {{=A('crontab',_href=URL('manage_crontab'))}}
-{{=link}}
-
+{{=A('new periodic task',_href=URL('edit_periodictask'))}}
+    
 {{=SQLTABLE(tasks,headers='fieldname:capitalize',
    columns=['celery_periodictask.id',
             'celery_periodictask.enabled',

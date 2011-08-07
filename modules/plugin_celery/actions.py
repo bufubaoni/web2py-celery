@@ -6,10 +6,22 @@ from celery.registry import tasks
 from celery.execute import send_task
 from celery.result import AsyncResult
 from celery.task import control
+from celery.task.base import TaskType
+from plugin_celery import tasks as mytasks
 
-def submit_task(name,*args,**kwargs):
+def istask(obj):
+    try:
+        return obj.__class__ == TaskType
+    except AttributeError:
+        return False
+
+def get_task_names():
+    return ['tasks.'+name for name in dir(mytasks) if istask(getattr(mytasks,name))]
+
+def submit_task(name,*args,**vars):
     """ submits a new task by name """
-    result = send_task(name,*args,**kwargs)
+    print args, vars
+    result = send_task(name,args=args,kwargs=vars)
     return {"ok": "true", "task_id": result.task_id}
 
 def registered_tasks():

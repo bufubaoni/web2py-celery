@@ -1,13 +1,34 @@
 from gluon.serializers import json
 from plugin_celery import actions
 
+class TYPE(object):
+    def __init__(self,myclass=list,parse=True):
+        self.myclass = myclass
+        self.parse=parse
+    def __call__(self,value):
+        from gluon.contrib.simplejson import loads
+        try:
+            obj = loads(value)
+        except:
+            return (value,T('invalid json'))
+        else:
+            if isinstance(obj,self.myclass):
+                if self.parse:
+                    return (obj,None)
+                else:
+                    return (value,None)
+            else:
+                return (value,'Not of type: %s' % self.myclass)
 
 response.menu += [
-    (T('Celery Console'),False,None,
-     [(T('Task Monitor (Meta)'),False,URL('taskmeta_monitor')),
-      (T('Task Monitor (Camera)'),False,URL('taskstate_monitor')),
-      (T('Task Schduler'),False,URL('periodictask_monitor')),
-      (T('Workers Monitor'),False,URL('workers_monitor'))])]
+    (T('Celery Console'),False,None,[
+            (T('New Task'),False,URL('create_task')),
+            (T('Task Monitor (Meta)'),False,URL('task_monitor')),
+            (T('Task Monitor (Camera)'),False,URL('taskstate_monitor')),
+            (T('Task Schduler'),False,URL('periodictask_monitor')),
+            (T('Workers Monitor'),False,URL('workers_monitor'))])]
+
+TASKS = actions.get_task_names()
 
 pc = plugin_celery
 db = plugin_celery.db
@@ -17,9 +38,21 @@ def index():
 
 def submit_task():
     name = request.args(0)
+    args = request.args[1:]
     vars = request.vars
     response.headers['Content-Type'] = "application/json"
-    return json(actions.submit_task(name,**vars))
+    return json(actions.submit_task(name,*args,**vars))
+
+def create_task():
+    form = SQLFORM.factory(Field('task',requires=IS_IN_SET(TASKS)),
+                           Field('args',default='[]',requires=TYPE(list)),
+                           Field('vars',default='{}',requires=TYPE(dict)))
+    if form.accepts(request,session):
+        res = actions.submit_task(request.vars.task,*form.vars.args,**form.vars.vars)
+        print res
+        session.flash = 'task submitted'
+        redirect(URL('view_task',args=res['task_id']))
+    return dict(form=form)
 
 def registered_tasks():
     response.headers['Content-Type'] = "application/json"
@@ -35,7 +68,7 @@ def delete_task():
     task_id = request.args(0)
     print db(pc.taskmeta.task_id==task_id).delete()
     return 
- 
+
 def revoke_task():
     task_id = request.args(0)
     return str(actions.revoke_task(task_id))
@@ -52,7 +85,7 @@ def view_task():
     task_id = request.args(0)
     return dict(task=actions.task_status(task_id))
 
-def taskmeta_monitor():
+def task_monitor():
     page = int(request.vars.page or 0)
     tasks = db(pc.taskmeta).select(
         orderby=~pc.taskmeta.date_done,
@@ -61,7 +94,8 @@ def taskmeta_monitor():
 
 def view_taskstate():
     task_id = request.args(0)
-    return dict(task=pc.taskstate(task_id=task_id))
+    task = pc.taskstate(task_id=task_id)
+    return dict(task=task)
 
 def taskstate_monitor():
     page = int(request.vars.page or 0)
@@ -84,7 +118,10 @@ def shutdown_worker():
 
 def edit_periodictask():
     id = request.args(0)
-    form=SQLFORM(pc.periodictask,id)
+    pc.periodictask.task.requires=IS_IN_SET(TASKS)
+    pc.periodictask.args.requires=TYPE(list,parse=False)
+    pc.periodictask.kwargs.requires=TYPE(dict,parse=False)
+    form = SQLFORM(pc.periodictask,id)
     if form.accepts(request,session):
         session.flash = 'task updated'
         redirect('periodictask_monitor')
@@ -93,18 +130,21 @@ def edit_periodictask():
 def periodictask_monitor():
     page = int(request.vars.page or 0)
     pc.periodictask.id.represent=lambda id: \
-        SPAN(id,' [',
-             A('edit',_href=URL('edit_periodictask',args=id)),'][',
-             A('on',callback=URL('enable_callback',args=(id,'True'))),'][',
-             A('off',callback=URL('enable_callback',args=(id,'Off'))),'][',
-             A('delete',callback=URL('delete_periodictask',args=id)),']')
+        SPAN(id,' ',
+             A('edit',_href=URL('edit_periodictask',args=id)),' ',
+             A('delete',callback=URL('delete_periodictask',args=id),delete='tr'))
+    pc.periodictask.enabled.represent=lambda e,row: \
+        SPAN(SPAN(e,_id='s%s'%row.id),' ',
+                  A('on',callback=URL('enable_callback',args=(row.id,'True')),
+                    target='s%s'%row.id),'/',
+                  A('off',callback=URL('enable_callback',args=(row.id,'False')),
+                    target='s%s'%row.id))
     tasks = db(pc.periodictask).select(limitby=(100*page, 100*(page+1)))
-    link = A('new task',_href=URL('edit_periodictask'))
-    return dict(tasks=tasks,page=page,link=link)    
+    return dict(tasks=tasks,page=page)
 
 def enable_callback():
     id = request.args(0)
-    enabled = request.args(1)=='True'
+    enabled = request.args(1) == 'True'
     db(pc.periodictask.id==id).update(enabled=enabled)
     return request.args(1)
 

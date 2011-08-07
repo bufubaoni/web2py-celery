@@ -1,4 +1,9 @@
 {{extend 'layout.html'}}
+
+<h2>Task Monitor (meta)</h2>
+
+{{=A('new regular task',_href=URL('create_task'))}}
+
 <table>
   <tr>
     <th>Id</th>
@@ -30,11 +35,10 @@
       {{=task.traceback and 'DATA' or ''}}
     </td>
     <td>
-      {{b=plugin_celery.button}}
-      {{=b('revoke',URL('revoke_task',args=task.task_id))}}
-      {{=b('terminate',URL('terminate_task',args=task.task_id))}}
-      {{=b('kill',URL('kill_task',args=task.task_id))}}
-      {{=b('delete',URL('delete_task',args=task.task_id),hide=True)}}
+      {{=A('revoke',callback=URL('revoke_task',args=task.task_id))}}
+      {{=A('terminate',callback=URL('terminate_task',args=task.task_id))}}
+      {{=A('kill',callback=URL('kill_task',args=task.task_id))}}
+      {{=A('delete',callback=URL('delete_task',args=task.task_id),delete='tr')}}
     </td>
   </tr>
   {{pass}}

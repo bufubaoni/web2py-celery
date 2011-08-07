@@ -1,11 +1,5 @@
 def _():
 
-    def button(name,link,hide=False):
-        hide = hide and "jQuery(this).closest('tr').remove();" or ''
-        return CAT('[',A(name,_href='#',
-                         _onclick="ajax('%s',[],'');%sreturn false;"\
-                             % (link,hide)),']')
-
     from gluon.storage import Storage
     from celery import states
 

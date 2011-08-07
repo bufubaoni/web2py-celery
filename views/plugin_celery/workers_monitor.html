@@ -1,5 +1,7 @@
 {{extend 'layout.html'}}
 
+<h2>Worker Monitor</h2>
+
 <table>
   <tr>
     <th>Hostname</th>
@@ -15,7 +17,7 @@
       {{=worker.last_heartbeat}}
     </td>
     <td>
-      [<a href="#" onclick="ajax('shutdown_worker/{{=worker.hostname}}',[],'');jQuery(this).closest('tr').remove();return False">shutdown</a>]
+      {{=A('shutdow',callback=URL('shutdown_worker',args=worker.hostname),delete='tr')}}
     </td>
   </tr>
   {{pass}}
