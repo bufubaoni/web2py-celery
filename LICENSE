@@ -1,4 +1,10 @@
-The web2py welcome app is licensed under public domain 
-(except for the css and js files that it includes, which have their own third party licenses).
+## LICENSE
 
-You can modify this license when you add your own code.
+New BSD License
+
+## ACKNOWLEGEMENTS
+
+This project is a rewrite but heavily based on django-celery.
+We thank Ask Solem, developer of celery and django-celery for his work and his help.
+
+This project was supported by Sahana Eden
